@@ -5,7 +5,7 @@
 */
 
 const HDWalletProvider = require('truffle-hdwallet-provider');
-const Web3 = require('Web3');
+const Web3 = require('web3');
 const mnemonic = "tube physical dad like link resource tortoise sight fury future front type";
 var fs = require('fs');
 var path = require('path');
