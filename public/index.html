@@ -1,0 +1,325 @@
+<html>
+
+<head>
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+
+    <style>
+        html, body {
+            font-family: 'Roboto', sans-serif;        
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            width: 400px;
+            font-size: 15px;
+            margin-bottom:10px;
+        }
+
+        input[type="button"] {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 10px;
+            font-size: 15px;
+            background-color: #009afa;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #accs {
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .row {
+            border-top: solid 12px #f0f0f0;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .col {
+            float: left;
+            padding-left: 20px;
+        }
+
+        h1 {
+            padding: 0px;
+            margin: 0px;
+            font-weight: 300;
+            font-size: 36px;
+        }
+        h2 {
+            color: #04569d;
+            font-size: 20px;
+            padding: 0px;
+            margin: 5px 0px 0px 0px;
+        }
+
+        h3 {
+            color: #04569d;
+            font-size: 15px;
+            padding: 0px;
+            margin: 5px 0px 0px 0px;
+        }
+
+        .msg {
+            color:#ff8000;
+            font-weight: 600;
+        }
+        .etherscan {
+            font-size: 12px;
+            font-weight: 400;
+            text-decoration: none;
+            color: #ff8000;
+        }
+        .large {
+            font-weight: 300;
+            font-size: 40px;
+        }
+        .small {
+            font-weight: 300;
+            font-size: 10px;
+        }  
+        .datestamp {
+            font-weight: 400;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1><img src="./img/atom.svg" height="28px"> ICO Console</h1>
+    
+    <h2>Crowdsale contract address</h2>
+    <div>
+        <input id="crowdsaleaddress" type="text" placeholder="0x..." value="">
+        <input type="button" id="getContract" value="Get contract info" onclick="runTests()" >
+        &nbsp; on Rinkeby
+    </div>
+    <div>
+        <a id="icoEtherscan" target="_blank" class="etherscan" href="#">View on Etherscan</a>
+    </div>
+
+    <div class="row">
+     
+        <div class="col">
+
+            <h2>Token Name</h2>
+            <div>        
+                <div class="large" id="tokenname">&nbsp;</div>
+            </div>
+
+            <h2>Total Supply</h2>
+            <div class="small">(Includes tokens not available in the crowdsale)</div>
+            <div>
+                <div id="totalSupply">&nbsp;</div>
+            </div>    
+
+            <h2>Token Owner</h2>
+            <a id="tokenOwnerEtherscan" target="_blank" class="etherscan" href="#">View owner's address</a>
+            <br>
+            <a id="tokenOwnerTokensEtherscan" target="_blank" class="etherscan" href="#">View owner's tokens</a>
+            <div>        
+                <div id="owner">&nbsp;</div>
+            </div>
+
+            <h2>Token address</h2>
+            
+            <a id="tokenAddressEtherscan" target="_blank" class="etherscan" href="#">View on Etherscan</a>
+            <div>        
+                <div id="tokenAddress">&nbsp;</div>                
+                <div class="small">Instruct investors to add the Token Address to Metamask</div>
+            </div>
+
+            <br>
+        
+
+            <h2>Crowdsale Info</h2>
+            <h3>Opening Time:</h3>
+            <div class="datestamp" id="openingTime"></div>
+            <h3>Closing Time:</h3>
+            <div class="datestamp" id="closingTime"></div>
+            <h3>Has Closed:</h3>
+            <div id="hasClosed"></div>
+            <h3>Rate:</h3>
+            <div id="rate"></div>
+            <h3>Remaining Tokens:</h3>
+            <div id="remainingTokens"></div>
+            <div class="small" id="remainingWei"></div>
+            <h3>Raised:</h3>
+            <div id="ethRaised"></div>
+            <div class="small" id="weiRaised"></div>
+
+            <br>
+            <br>
+
+    
+        <!-- col 1 -->
+        </div>
+
+
+        <div class="col">
+
+
+        
+            <h2>Token symbol</h2>
+            <div>        
+                <div class="large" id="symbol">&nbsp;</div>
+            </div>
+            
+            <h2>Whitelist an Ethereum account</h2>
+            <div class="small">After whitelisting, click 'view owner address' on the left to track the transaction.</div>
+
+            <div>            
+                <input id="whitelisted" placeholder="0x..." type="text" value="">
+            </div> 
+            <div class="msg" id="whitelist_msg"></div>
+            <div>
+                <input type="button" value="Add account to ICO whitelist" onclick="whitelist()" >
+            </div> 
+            
+            <br>
+            
+            <h2>Get Account Token balance</h2>
+            <div>
+                <input id="purchaser" type="text" placeholder="0x...">
+            </div> 
+            <div>
+                <input type="button" value="Get token balance" onclick="getTokenBalOfAccount()" >
+            </div> 
+
+            <div>
+                <h3>Token Balance (wei):</h3>
+                <div id="test2">unknown</div>
+            </div>
+        <!--
+            <h2>ICO-controlled Wallet Accounts</h2>
+            <div id="accs">&nbsp;</div>
+        -->
+
+        <!-- col 2 -->
+        </div>
+            
+    <!-- row -->
+    </div>
+
+
+    <script>
+
+        $('.row').hide();
+        $('#icoEtherscan').hide();   
+
+        var addr = gup ('a') || '';
+        $('#crowdsaleaddress').val(addr);
+        if (addr) {
+            $('#getContract').click();
+        }
+
+
+        function getTokenBalOfAccount() {
+
+            var crowdsaleaddress = $('#crowdsaleaddress').val();
+            var purchaser = $('#purchaser').val();
+            var parms = 'crowdsaleaddress=' + crowdsaleaddress + '&' + 'purchaser=' + purchaser;
+
+            $.get( '/balance?' + parms, function( data ) {
+                $( "#test2" ).html( data );
+            });
+
+        }
+
+        function runTests() {
+
+            $('.row').show();
+
+/*
+            $.get( "/accounts", function( data ) {    
+                var accounts = '';
+                data.forEach(acc => {
+                    accounts = accounts + acc + '<br>';
+                })
+                //var accounts = JSON.stringify(data).split(',').join(',<br>');
+                $( "#accs" ).html( accounts );
+            });
+*/
+
+            var crowdsaleaddress = $('#crowdsaleaddress').val();
+    
+            $('#icoEtherscan').show();    
+            $( "#icoEtherscan" ).attr('href', 'https://rinkeby.etherscan.io/address/' + crowdsaleaddress); 
+
+
+            $.get( '/crowdsaleInfo?crowdsaleaddress=' + crowdsaleaddress, function( data ) {    
+                $('#openingTime').html(new Date(parseInt(data.openingTime + '000')));
+                $('#closingTime').html(new Date(parseInt(data.closingTime + '000')));
+                data.hasClosed ? $('#hasClosed').html('Yes') : $('#hasClosed').html('No');
+                $('#rate').html(data.rate + ' tokens = 1 ETH');
+              //  $('#remainingWei').html( Number(data.remainingTokens).toLocaleString() + ' wei remaining');
+                var remTokens = data.remainingTokens.slice(0, -18);
+                $('#remainingTokens').html( Number(remTokens).toLocaleString());             
+                $('#weiRaised').html( Number(data.weiRaised).toLocaleString() + ' wei');
+                var issuedTokens = data.weiRaised / 1e18;
+                $('#ethRaised').html(Number(issuedTokens).toLocaleString() + ' ETH');
+
+            });   
+
+    
+            $.get( '/tokenInfo?crowdsaleaddress=' + crowdsaleaddress, function( data ) {    
+                var totalSup = Number(data.totalSupply / 1e18).toLocaleString();
+
+                $( "#totalSupply" ).html( totalSup);
+                $( "#symbol" ).html( data.symbol );
+                $( "#owner" ).html( data.owner );
+                $( "#tokenOwnerEtherscan" ).attr('href', 'https://rinkeby.etherscan.io/address/' + data.owner );
+                $( "#tokenOwnerTokensEtherscan" ).attr('href', 'https://rinkeby.etherscan.io/token/' + data.tokenaddress + '?a=' + data.owner );
+                $( "#tokenname" ).html( data.name );
+                $( "#tokenAddress" ).html( data.tokenaddress );
+                $( "#tokenAddressEtherscan" ).attr('href', 'https://rinkeby.etherscan.io/token/' + data.tokenaddress );
+                
+                
+            });  
+
+
+        }
+
+        function whitelist() {
+      
+            var crowdsaleaddress = $('#crowdsaleaddress').val();
+            var accountToWhitelist = $('#whitelisted').val();   
+            var parms = 'crowdsaleaddress=' + crowdsaleaddress + '&' + 'account=' + accountToWhitelist;
+
+            if (accountToWhitelist == "") {
+                $('#whitelist_msg').text('Specify a whitelist address');
+                return;
+            }
+
+             $('#whitelist_msg').text('adding to whitelist - please wait..');
+
+            $.get( "/whitelist?" + parms, function( data ) {    
+                $('#whitelist_msg').text('whitelisted address ' + accountToWhitelist);
+                $('#whitelisted').val(''); 
+            })
+            .fail(error => {
+                $('#whitelist_msg').text('Error: Could not whitelist address ' + accountToWhitelist);
+                $('#whitelisted').val(''); 
+            })
+
+        }
+
+        function gup(name){
+            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+            var regexS = "[\\?&]"+name+"=([^&#]*)";
+            var regex = new RegExp(regexS);
+            var results = regex.exec(window.location.href);
+            if (results == null) {
+                return '';
+            } else {
+                return results[1];
+            }
+        } 
+    </script>
+</body>
+
+</html>
